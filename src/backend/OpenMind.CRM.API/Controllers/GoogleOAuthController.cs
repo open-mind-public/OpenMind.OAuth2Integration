@@ -1,0 +1,95 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OpenMind.CRM.Application.Services.Interfaces;
+using System.Security.Claims;
+using OpenMind.CRM.Application.Dtos;
+
+namespace OpenMind.CRM.API.Controllers;
+
+[ApiController]
+[Route("api/google")]
+[Authorize]
+public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService) : ControllerBase
+{
+    [HttpGet("auth-url")]
+    public ActionResult<AuthUrlResponse> GetAuthorizationUrl()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var authUrl = googleService.GenerateAuthorizationUrl(userId);
+        
+        return Ok(new AuthUrlResponse
+        {
+            AuthorizationUrl = authUrl,
+            State = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(userId.ToString())),
+            Provider = ((IOAuthService)googleService).ProviderName
+        });
+    }
+
+    [HttpGet("callback")]
+    [AllowAnonymous]
+    public async Task<IActionResult> HandleCallback([FromQuery] string code, [FromQuery] string state)
+    {
+        var success = await googleService.HandleAuthorizationCallbackAsync(code, state);
+        return Redirect(success ? "http://localhost:4200/dashboard?googleAuth=success" : "http://localhost:4200/dashboard?googleAuth=error");
+    }
+
+    [HttpGet("emails")]
+    public async Task<ActionResult<List<EmailDto>>> GetEmails([FromQuery] int maxResults = 10)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var emails = await googleService.GetEmailsAsync(userId, maxResults);
+        return Ok(emails);
+    }
+
+    [HttpGet("calendar/events")]
+    public async Task<ActionResult<List<CalendarEventDto>>> GetCalendarEvents(
+        [FromQuery] DateTime? timeMin = null,
+        [FromQuery] DateTime? timeMax = null,
+        [FromQuery] int maxResults = 50)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var events = await googleService.GetCalendarEventsAsync(userId, timeMin, timeMax, maxResults);
+        return Ok(events);
+    }
+
+    [HttpGet("status")]
+    public async Task<IActionResult> GetStatus()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var hasValidToken = await googleService.HasValidTokenAsync(userId);
+        return Ok(new { Provider = ((IOAuthService)googleService).ProviderName, IsConnected = hasValidToken });
+    }
+
+    [HttpDelete("revoke")]
+    public async Task<IActionResult> RevokeAccess()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = await googleService.RevokeTokenAsync(userId);
+        return success ? Ok() : BadRequest("Failed to revoke Google access");
+    }
+}

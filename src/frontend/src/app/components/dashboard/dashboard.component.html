@@ -1,0 +1,78 @@
+<div class="dashboard-container">
+  <h1>Welcome to OpenMind CRM, {{currentUser?.firstName}}!</h1>
+  
+  <!-- Google Integration Status -->
+  <div *ngIf="!currentUser?.hasGoogleAccess" class="mb-16">
+    <mat-card class="p-16">
+      <mat-card-content>
+        <h3>Connect your Google Account</h3>
+        <p>Connect your Google account to access Gmail and Calendar directly from your CRM dashboard.</p>
+        <button mat-raised-button color="primary" (click)="connectGoogleAccount()">
+          <mat-icon>link</mat-icon>
+          Connect Google Account
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid" *ngIf="currentUser?.hasGoogleAccess">
+    <!-- Gmail Panel -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Recent Emails</mat-card-title>
+        <button mat-icon-button (click)="loadEmails()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="loadingEmails" class="text-center p-16">
+          <mat-spinner></mat-spinner>
+        </div>
+        
+        <div *ngIf="!loadingEmails && emails.length === 0" class="text-center p-16">
+          <p>No emails found or not connected to Google.</p>
+        </div>
+
+        <mat-list *ngIf="!loadingEmails && emails.length > 0">
+          <div *ngFor="let email of emails" class="email-item">
+            <div class="email-subject">{{email.subject || 'No Subject'}}</div>
+            <div class="email-from">From: {{email.from}}</div>
+            <div class="email-from">{{email.date | date:'short'}}</div>
+          </div>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Calendar Panel -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Upcoming Events</mat-card-title>
+        <button mat-icon-button (click)="loadCalendarEvents()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="loadingEvents" class="text-center p-16">
+          <mat-spinner></mat-spinner>
+        </div>
+        
+        <div *ngIf="!loadingEvents && events.length === 0" class="text-center p-16">
+          <p>No upcoming events found.</p>
+        </div>
+
+        <mat-list *ngIf="!loadingEvents && events.length > 0">
+          <div *ngFor="let event of events" class="event-item">
+            <div class="event-title">{{event.summary || 'No Title'}}</div>
+            <div class="event-time" *ngIf="event.start">
+              {{event.start | date:'short'}}
+            </div>
+            <div class="event-time" *ngIf="event.location">
+              📍 {{event.location}}
+            </div>
+          </div>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
