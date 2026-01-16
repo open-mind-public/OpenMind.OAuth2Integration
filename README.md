@@ -18,6 +18,20 @@ Applcation CRM lets sales representatives see their Gmail emails and Google Cale
     - When the access token expires, the CRM uses the refresh token to get a new one.
     - No user interaction is required for this.
 
+## OAuth2 Flow
+
+The application implements the Authorization Code flow:
+
+1. User clicks "Connect Google Account"
+2. Redirected to Google's authorization server
+3. User grants permissions
+4. Google redirects back with authorization code
+5. Backend exchanges code for access and refresh tokens
+6. Tokens are stored securely and used for API calls
+7. Refresh tokens automatically handle token expiration
+
+![img.png](img.png)
+
 ## Setup Instructions
 
 ### 1. Google OAuth2 Setup
@@ -80,20 +94,6 @@ The Angular app will be available at `http://localhost:4200`
 1. **Register/Login**: Create a new account or login with existing credentials
 2. **Connect Google Account**: Click "Connect Google Account" to authorize Gmail and Calendar access
 3. **View Dashboard**: Access your emails and calendar events directly in the CRM interface
-
-## OAuth2 Flow
-
-The application implements the Authorization Code flow:
-
-1. User clicks "Connect Google Account"
-2. Redirected to Google's authorization server
-3. User grants permissions
-4. Google redirects back with authorization code
-5. Backend exchanges code for access and refresh tokens
-6. Tokens are stored securely and used for API calls
-7. Refresh tokens automatically handle token expiration
-
-![img.png](img.png)
 
 ## License
 
