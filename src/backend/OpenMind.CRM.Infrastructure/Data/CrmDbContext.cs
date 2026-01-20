@@ -3,12 +3,8 @@ using OpenMind.CRM.Domain.Entities;
 
 namespace OpenMind.CRM.Infrastructure.Data;
 
-public class CrmDbContext : DbContext
+public class CrmDbContext(DbContextOptions<CrmDbContext> options) : DbContext(options)
 {
-    public CrmDbContext(DbContextOptions<CrmDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<User> Users { get; set; }
     public DbSet<OAuthToken> OAuthTokens { get; set; }
 
@@ -16,7 +12,6 @@ public class CrmDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // User configuration
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -26,7 +21,6 @@ public class CrmDbContext : DbContext
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(255);
         });
 
-        // OAuthToken configuration
         modelBuilder.Entity<OAuthToken>(entity =>
         {
             entity.HasKey(t => t.Id);
