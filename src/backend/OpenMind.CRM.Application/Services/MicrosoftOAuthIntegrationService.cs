@@ -22,7 +22,7 @@ public class MicrosoftOAuthIntegrationService(
         throw new NotImplementedException("Microsoft OAuth is not yet implemented. Configure Microsoft Azure AD app and implement MSAL authentication.");
     }
 
-    public Task<bool> HandleAuthorizationCallbackAsync(string code, string state)
+    public Task<string> HandleAuthorizationCallbackAsync(string code, string state)
     {
         throw new NotImplementedException("Microsoft OAuth callback is not yet implemented.");
     }

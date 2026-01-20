@@ -59,15 +59,18 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
         return authUrl;
     }
 
-    public async Task<bool> HandleAuthorizationCallbackAsync(string code, string state)
+    public async Task<string> HandleAuthorizationCallbackAsync(string code, string state)
     {
+        var successUrl = _configuration["Auth:RedirectUrls:Google:Success"] ?? throw new ArgumentNullException();
+        var errorUrl = _configuration["Auth:RedirectUrls:Google:Error"] ?? throw new ArgumentNullException();
+        
         try
         {
             var userIdBytes = Convert.FromBase64String(state);
             var userIdString = Encoding.UTF8.GetString(userIdBytes);
             if (!int.TryParse(userIdString, out var userId))
             {
-                return false;
+                return errorUrl;
             }
 
             var redirectUri = _configuration["Google:RedirectUri"];
@@ -101,12 +104,12 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
                 await _userRepository.SaveOAuthTokenAsync(oauthToken);
             }
 
-            return true;
+            return successUrl;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error handling Google authorization callback");
-            return false;
+            return errorUrl;
         }
     }
 

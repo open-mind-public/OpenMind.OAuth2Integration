@@ -34,8 +34,8 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
     [AllowAnonymous]
     public async Task<IActionResult> HandleCallback([FromQuery] string code, [FromQuery] string state)
     {
-        var success = await googleService.HandleAuthorizationCallbackAsync(code, state);
-        return Redirect(success ? "http://localhost:4200/dashboard?googleAuth=success" : "http://localhost:4200/dashboard?googleAuth=error");
+        var redirectUrl = await googleService.HandleAuthorizationCallbackAsync(code, state);
+        return Redirect(redirectUrl);
     }
 
     [HttpGet("emails")]

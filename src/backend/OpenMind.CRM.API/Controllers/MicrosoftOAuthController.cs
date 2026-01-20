@@ -33,8 +33,8 @@ public class MicrosoftOAuthController(IMicrosoftOAuthIntegrationService microsof
     [AllowAnonymous]
     public async Task<IActionResult> HandleCallback([FromQuery] string code, [FromQuery] string state)
     {
-        var success = await microsoftService.HandleAuthorizationCallbackAsync(code, state);
-        return Redirect(success ? "http://localhost:4200/dashboard?microsoftAuth=success" : "http://localhost:4200/dashboard?microsoftAuth=error");
+        var redirectUrl = await microsoftService.HandleAuthorizationCallbackAsync(code, state);
+        return Redirect(redirectUrl);
     }
 
     [HttpGet("emails")]
