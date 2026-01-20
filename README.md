@@ -30,7 +30,72 @@ The application implements the Authorization Code flow:
 6. Tokens are stored securely and used for API calls
 7. Refresh tokens automatically handle token expiration
 
-![img.png](img.png)
+![OAuth2 Flow](assets/oath2-flow.png)
+
+## OpenID Connect (OIDC)
+
+This application also supports **"Login with Google"** using OpenID Connect, which is an identity layer built on top of OAuth2.
+
+### What is OpenID Connect?
+
+OpenID Connect (OIDC) extends OAuth2 to provide:
+- **Authentication** (verifying who the user is) in addition to OAuth2's authorization
+- **ID Token**: A JWT containing user identity information (email, name, profile picture)
+- **Standardized user info**: Consistent way to get user profile data across providers
+
+### OAuth2 vs OpenID Connect
+
+| Feature | OAuth2 | OpenID Connect |
+|---------|--------|----------------|
+| Purpose | Authorization (access to resources) | Authentication (user identity) |
+| Token Type | Access Token | ID Token + Access Token |
+| User Info | Not standardized | Standardized claims (email, name, etc.) |
+| Use Case | "Access my Gmail" | "Login with Google" |
+
+### Login with Google Flow
+
+![Login with Google](assets/google-login.jpg)
+
+1. User clicks "Sign in with Google" button
+2. Google Identity Services (GIS) library handles the authentication
+3. User authenticates with Google and grants consent
+4. Google returns an **ID Token** (JWT) to the frontend
+5. Frontend sends the ID Token to the backend
+6. Backend validates the ID Token using Google's public keys
+7. Backend extracts user info (email, name) from the token
+8. Backend creates/finds the user and issues a JWT session token
+9. User is logged into the CRM
+
+### ID Token Claims
+
+The Google ID Token contains standardized claims:
+- `sub`: Unique user identifier
+- `email`: User's email address
+- `email_verified`: Whether email is verified
+- `name`: User's full name
+- `given_name`: First name
+- `family_name`: Last name
+- `picture`: Profile picture URL
+- `iat`: Issued at timestamp
+- `exp`: Expiration timestamp
+
+### Configuration for Login with Google
+
+#### Frontend (environment.ts):
+```typescript
+export const environment = {
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID'
+};
+```
+
+#### Backend (appsettings.json):
+```json
+{
+  "Google": {
+    "ClientId": "YOUR_GOOGLE_CLIENT_ID"
+  }
+}
+```
 
 ## Setup Instructions
 

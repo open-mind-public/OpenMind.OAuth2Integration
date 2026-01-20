@@ -81,3 +81,37 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .spacer {
   flex: 1 1 auto;
 }
+
+/* Google Sign-In styles */
+.divider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.divider-container mat-divider {
+  flex: 1;
+}
+
+.divider-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.google-signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 44px;
+}
+
+.google-signin-container #google-signin-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.google-spinner {
+  position: absolute;
+}

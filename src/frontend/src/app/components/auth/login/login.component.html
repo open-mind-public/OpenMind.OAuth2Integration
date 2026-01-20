@@ -32,6 +32,17 @@
           <span *ngIf="!loading">Login</span>
         </button>
 
+        <div class="divider-container mt-16 mb-16">
+          <mat-divider></mat-divider>
+          <span class="divider-text">or</span>
+          <mat-divider></mat-divider>
+        </div>
+
+        <div class="google-signin-container">
+          <div id="google-signin-button"></div>
+          <mat-spinner diameter="20" *ngIf="googleLoading" class="google-spinner"></mat-spinner>
+        </div>
+
         <div class="text-center mt-16">
           <a mat-button routerLink="/register">Don't have an account? Register here</a>
         </div>

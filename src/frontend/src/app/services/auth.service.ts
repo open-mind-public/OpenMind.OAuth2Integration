@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { User, LoginRequest, RegisterRequest, LoginResponse } from '../models/models';
+import { User, LoginRequest, RegisterRequest, LoginResponse, GoogleLoginRequest } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +32,18 @@ export class AuthService {
 
   register(userData: RegisterRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.API_URL}/auth/register`, userData)
+      .pipe(
+        tap(response => {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('tokenExpiry', response.expiresAt);
+          this.currentUserSubject.next(response.user);
+        })
+      );
+  }
+
+  googleLogin(idToken: string): Observable<LoginResponse> {
+    const request: GoogleLoginRequest = { idToken };
+    return this.http.post<LoginResponse>(`${this.API_URL}/auth/google-login`, request)
       .pipe(
         tap(response => {
           localStorage.setItem('token', response.token);
