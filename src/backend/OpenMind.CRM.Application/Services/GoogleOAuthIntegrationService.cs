@@ -54,8 +54,19 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
 
         var request = _authFlow.CreateAuthorizationCodeRequest(redirectUri);
         request.State = state;
-
+        
         var authUrl = request.Build().ToString();
+        
+        // Add access_type=offline to get refresh token
+        // Add prompt=consent to force consent screen and always get refresh token
+        if (!authUrl.Contains("access_type="))
+        {
+            authUrl += "&access_type=offline";
+        }
+        if (!authUrl.Contains("prompt="))
+        {
+            authUrl += "&prompt=consent";
+        }
 
         return authUrl;
     }
