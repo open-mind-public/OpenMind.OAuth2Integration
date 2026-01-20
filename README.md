@@ -32,6 +32,8 @@ The application implements the Authorization Code flow:
 
 ![OAuth2 Flow](assets/oath2-flow.png)
 
+![OAuth2 Flow](assets/google-consent-oauth2.jpg)
+
 ## OpenID Connect (OIDC)
 
 This application also supports **"Login with Google"** using OpenID Connect, which is an identity layer built on top of OAuth2.

@@ -7,6 +7,7 @@ using Google.Apis.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenMind.CRM.Application.Services.Interfaces;
+using OpenMind.CRM.Application.Exceptions;
 using OpenMind.CRM.Domain.Entities;
 using System.Text;
 using OpenMind.CRM.Application.Dtos;
@@ -264,8 +265,14 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
         };
 
         // Check if token needs refresh
-        if (DateTime.UtcNow >= tokenInfo.ExpiresAt && !string.IsNullOrEmpty(tokenInfo.RefreshToken))
+        if (DateTime.UtcNow >= tokenInfo.ExpiresAt)
         {
+            if (string.IsNullOrEmpty(tokenInfo.RefreshToken))
+            {
+                _logger.LogWarning("No refresh token available for user {UserId}, re-authorization required", userId);
+                throw new OAuthTokenExpiredException("Google", "Access token expired and no refresh token available. Please re-authorize.");
+            }
+            
             try
             {
                 var refreshedToken =
@@ -281,10 +288,17 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
 
                 token = refreshedToken;
             }
+            catch (TokenResponseException ex)
+            {
+                _logger.LogError(ex, "Failed to refresh token for user {UserId} - token may be revoked or expired", userId);
+                // Delete the invalid token so user can re-authorize
+                await _userRepository.DeleteOAuthTokenAsync(userId, "Google");
+                throw new OAuthTokenExpiredException("Google", "Refresh token is invalid or expired. Please re-authorize your Google account.", ex);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to refresh token for user {UserId}", userId);
-                return null;
+                throw new OAuthTokenExpiredException("Google", "Failed to refresh access token. Please re-authorize your Google account.", ex);
             }
         }
 

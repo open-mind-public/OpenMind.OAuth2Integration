@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenMind.CRM.Application.Services.Interfaces;
+using OpenMind.CRM.Application.Exceptions;
 using System.Security.Claims;
 using OpenMind.CRM.Application.Dtos;
 
@@ -47,8 +48,20 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
             return Unauthorized();
         }
 
-        var emails = await googleService.GetEmailsAsync(userId, maxResults);
-        return Ok(emails);
+        try
+        {
+            var emails = await googleService.GetEmailsAsync(userId, maxResults);
+            return Ok(emails);
+        }
+        catch (OAuthTokenExpiredException ex)
+        {
+            return StatusCode(403, new { 
+                error = "token_expired", 
+                message = ex.Message, 
+                provider = ex.Provider,
+                requiresReauthorization = true 
+            });
+        }
     }
 
     [HttpGet("calendar/events")]
@@ -63,8 +76,20 @@ public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService)
             return Unauthorized();
         }
 
-        var events = await googleService.GetCalendarEventsAsync(userId, timeMin, timeMax, maxResults);
-        return Ok(events);
+        try
+        {
+            var events = await googleService.GetCalendarEventsAsync(userId, timeMin, timeMax, maxResults);
+            return Ok(events);
+        }
+        catch (OAuthTokenExpiredException ex)
+        {
+            return StatusCode(403, new { 
+                error = "token_expired", 
+                message = ex.Message, 
+                provider = ex.Provider,
+                requiresReauthorization = true 
+            });
+        }
     }
 
     [HttpGet("status")]

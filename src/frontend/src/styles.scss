@@ -115,3 +115,32 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .google-spinner {
   position: absolute;
 }
+
+/* Token Expired Warning styles */
+.token-expired-card {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.token-expired-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.token-expired-content mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.token-expired-content h3 {
+  margin: 0 0 8px 0;
+  color: #e65100;
+}
+
+.token-expired-content p {
+  margin: 0;
+  color: #666;
+}
