@@ -15,8 +15,22 @@ Applcation CRM lets sales representatives see their Gmail emails and Google Cale
     - CRM uses the access token to fetch the user’s emails and calendar events.
     - Emails appear in the CRM dashboard, without ever knowing the user’s Google password.
 5. Token expiration and refresh
-    - When the access token expires, the CRM uses the refresh token to get a new one.
-    - No user interaction is required for this.
+    - When the access token expires, the CRM uses the refresh token to get a new one. No user interaction is required for this.  
+    - When the refresh token is expired, the UI will prompt user to authenticate against Google again.
+
+**Login with Google**
+
+Applcation CRM lets sales representatives login using their own Google account.
+
+1. User clicks "Sign in with Google" button
+2. Google Identity Services (GIS) library handles the authentication
+3. User authenticates with Google and grants consent
+4. Google returns an **ID Token** (JWT) to the frontend
+5. Frontend sends the ID Token to the backend
+6. Backend validates the ID Token using Google's public keys
+7. Backend extracts user info (email, name) from the token
+8. Backend creates/finds the user and issues a JWT session token
+9. User is logged into the CRM
 
 ## OAuth2 Flow
 
@@ -42,8 +56,9 @@ This application also supports **"Login with Google"** using OpenID Connect, whi
 
 OpenID Connect (OIDC) extends OAuth2 to provide:
 - **Authentication** (verifying who the user is) in addition to OAuth2's authorization
-- **ID Token**: A JWT containing user identity information (email, name, profile picture)
-- **Standardized user info**: Consistent way to get user profile data across providers
+- **ID Token**: A JWT containing user identity information (email, name, profile picture). The CRM uses this information to create an user in the system.
+
+![Login with Google](assets/google-login.jpg)
 
 ### OAuth2 vs OpenID Connect
 
@@ -53,20 +68,6 @@ OpenID Connect (OIDC) extends OAuth2 to provide:
 | Token Type | Access Token | ID Token + Access Token |
 | User Info | Not standardized | Standardized claims (email, name, etc.) |
 | Use Case | "Access my Gmail" | "Login with Google" |
-
-### Login with Google Flow
-
-![Login with Google](assets/google-login.jpg)
-
-1. User clicks "Sign in with Google" button
-2. Google Identity Services (GIS) library handles the authentication
-3. User authenticates with Google and grants consent
-4. Google returns an **ID Token** (JWT) to the frontend
-5. Frontend sends the ID Token to the backend
-6. Backend validates the ID Token using Google's public keys
-7. Backend extracts user info (email, name) from the token
-8. Backend creates/finds the user and issues a JWT session token
-9. User is logged into the CRM
 
 ### ID Token Claims
 
@@ -110,6 +111,8 @@ export const environment = {
    - Application type: Web application
    - Authorized redirect URIs: `https://localhost:7001/api/google/callback`
 5. Note down the Client ID and Client Secret
+
+![Google setup](assets/google-oauth-setup.gif)
 
 ### 2. Backend Configuration
 

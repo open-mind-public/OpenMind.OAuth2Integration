@@ -87,8 +87,7 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
 
             var redirectUri = _configuration["Google:RedirectUri"];
 
-            var token = await _authFlow.ExchangeCodeForTokenAsync(userId.ToString(), code, redirectUri,
-                CancellationToken.None);
+            var token = await _authFlow.ExchangeCodeForTokenAsync(userId.ToString(), code, redirectUri, CancellationToken.None);
 
             var existingToken = await _userRepository.GetOAuthTokenAsync(userId, "Google");
 
