@@ -58,6 +58,8 @@ OpenID Connect (OIDC) extends OAuth2 to provide:
 - **Authentication** (verifying who the user is) in addition to OAuth2's authorization
 - **ID Token**: A JWT containing user identity information (email, name, profile picture). The CRM uses this information to create an user in the system.
 
+![OIDC Flow](assets/OpenID-Connect-Flow.png)
+
 ![Login with Google](assets/google-login.jpg)
 
 ### OAuth2 vs OpenID Connect
