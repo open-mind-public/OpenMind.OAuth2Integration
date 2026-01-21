@@ -53,7 +53,7 @@ export class GoogleService {
 
   redirectToGoogleAuth(): void {
     this.getAuthorizationUrl().subscribe(response => {
-      window.open(response.authorizationUrl, '_blank');
+      window.location.href = response.authorizationUrl;
     });
   }
 
