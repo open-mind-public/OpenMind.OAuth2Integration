@@ -6,62 +6,85 @@ using OpenMind.CRM.Application.Services;
 using OpenMind.CRM.Application.Services.Interfaces;
 using OpenMind.CRM.Infrastructure.Data;
 using OpenMind.CRM.Infrastructure.Repositories;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<CrmDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("OpenMind.CRM.Infrastructure")));
+    builder.Host.UseSerilog((context, configuration) =>
+        configuration.ReadFrom.Configuration(context.Configuration));
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+    Log.Information("Starting OpenMind CRM API");
 
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IGoogleOAuthIntegrationService, GoogleOAuthIntegrationService>();
-builder.Services.AddScoped<IMicrosoftOAuthIntegrationService, MicrosoftOAuthIntegrationService>();
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IPasswordService, PasswordService>();
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-var jwtSecret = builder.Configuration["JWT:Secret"] ?? "your-super-secret-key-that-should-be-at-least-32-characters-long";
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddDbContext<CrmDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+            b => b.MigrationsAssembly("OpenMind.CRM.Infrastructure")));
+
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IGoogleOAuthIntegrationService, GoogleOAuthIntegrationService>();
+    builder.Services.AddScoped<IMicrosoftOAuthIntegrationService, MicrosoftOAuthIntegrationService>();
+    builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+    builder.Services.AddScoped<IPasswordService, PasswordService>();
+
+    var jwtSecret = builder.Configuration["JWT:Secret"];
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret)),
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret ?? throw new ArgumentException())),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+        options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy.WithOrigins("http://localhost:4200")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        });
     });
-});
 
-var app = builder.Build();
+    var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSerilogRequestLogging();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseCors("AllowFrontend");
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.MapControllers();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
