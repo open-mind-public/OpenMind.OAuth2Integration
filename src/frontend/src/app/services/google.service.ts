@@ -20,7 +20,7 @@ export class GoogleService {
   constructor(private http: HttpClient) {}
 
   getAuthorizationUrl(): Observable<{ authorizationUrl: string; state: string }> {
-    return this.http.get<{ authorizationUrl: string; state: string }>(`${this.API_URL}/google/auth-url`);
+    return this.http.get<{ authorizationUrl: string; state: string }>(`${this.API_URL}/google/authorize`);
   }
 
   getEmails(maxResults: number = 10): Observable<GoogleEmail[]> {

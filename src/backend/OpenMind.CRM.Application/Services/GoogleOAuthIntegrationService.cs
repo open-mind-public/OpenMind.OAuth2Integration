@@ -89,7 +89,7 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
 
             var token = await _authFlow.ExchangeCodeForTokenAsync(userId.ToString(), code, redirectUri, CancellationToken.None);
 
-            var existingToken = await _userRepository.GetOAuthTokenAsync(userId, "Google");
+            var existingToken = await _userRepository.GetOAuthTokenAsync(userId, this.ProviderName);
 
             if (existingToken != null)
             {
@@ -104,7 +104,7 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
                 var oauthToken = new OAuthToken
                 {
                     UserId = userId,
-                    Provider = "Google",
+                    Provider = this.ProviderName,
                     AccessToken = token.AccessToken,
                     RefreshToken = token.RefreshToken ?? string.Empty,
                     ExpiresAt = DateTime.UtcNow.AddSeconds(token.ExpiresInSeconds ?? 3600),
@@ -112,6 +112,7 @@ public class GoogleOAuthIntegrationService : IGoogleOAuthIntegrationService
                     UpdatedAt = DateTime.UtcNow,
                     Scopes = string.Join(",", GoogleScopes)
                 };
+                
                 await _userRepository.SaveOAuthTokenAsync(oauthToken);
             }
 

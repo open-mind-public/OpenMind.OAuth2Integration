@@ -47,16 +47,16 @@ public class AuthService(
 
     public async Task<LoginResponse> GoogleLoginAsync(GoogleLoginRequest request)
     {
-        var googleClientId = configuration["Google:ClientId"] 
-            ?? throw new InvalidOperationException("Google ClientId is not configured");
+        var googleClientId = configuration["Google:ClientId"] ?? throw new InvalidOperationException("Google ClientId is not configured");
 
         GoogleJsonWebSignature.Payload payload;
         try
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                Audience = new[] { googleClientId }
+                Audience = [googleClientId]
             };
+            
             payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
         }
         catch (InvalidJwtException ex)
@@ -75,7 +75,7 @@ public class AuthService(
                 Email = payload.Email,
                 FirstName = payload.GivenName ?? payload.Name?.Split(' ').FirstOrDefault() ?? "User",
                 LastName = payload.FamilyName ?? payload.Name?.Split(' ').Skip(1).FirstOrDefault() ?? "",
-                PasswordHash = null, // Google users don't have a password
+                PasswordHash = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

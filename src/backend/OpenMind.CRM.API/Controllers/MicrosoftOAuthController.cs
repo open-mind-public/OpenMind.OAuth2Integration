@@ -11,7 +11,7 @@ namespace OpenMind.CRM.API.Controllers;
 [Authorize]
 public class MicrosoftOAuthController(IMicrosoftOAuthIntegrationService microsoftService) : ControllerBase
 {
-    [HttpGet("auth-url")]
+    [HttpGet("authorize")]
     public ActionResult<AuthUrlResponse> GetAuthorizationUrl()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

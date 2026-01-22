@@ -12,7 +12,7 @@ namespace OpenMind.CRM.API.Controllers;
 [Authorize]
 public class GoogleOAuthController(IGoogleOAuthIntegrationService googleService) : ControllerBase
 {
-    [HttpGet("auth-url")]
+    [HttpGet("authorize")]
     public ActionResult<AuthUrlResponse> GetAuthorizationUrl()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
